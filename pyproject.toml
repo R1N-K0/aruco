@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "white-board-roi"
+version = "0.1.0"
+description = "ArUco マーカー2つから白板の ROI を矩形で返す"
+requires-python = ">=3.9"
+dependencies = ["numpy", "opencv-python>=4.7"]
+
+[tool.setuptools]
+py-modules = ["white_board_roi"]

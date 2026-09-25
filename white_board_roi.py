@@ -13,6 +13,8 @@ SHIFT = 0.10    # ROIを右へずらす量（同上、負で左）
 
 OFFSET = 2.46   # マーカー0→1 の距離（同上）
 
+KEEP = 0.2      # ROIのうち画面中心側に残す幅の割合（端ほどスペクトルが不安定なため）
+
 SMALL = 0.25    # 2段目の検出の縮小率
 
 BOARD_ROI = (0.083, 0.289, 0.873, 0.819)  # 白板の外形に対する ROI
@@ -101,7 +103,14 @@ def _roi_from_binary(gray):
     return x + rx0 * w, y + ry0 * h, x + rx1 * w, y + ry1 * h
 
 
-def find_board(gray, gap=GAP, height=HEIGHT, margin=MARGIN, shift=SHIFT):
+def _keep_center_side(x0, x1, w, keep):
+    width = (x1 - x0) * keep
+    if (x0 + x1) / 2 > w / 2:
+        return x0, x0 + width
+    return x1 - width, x1
+
+
+def find_board(gray, gap=GAP, height=HEIGHT, margin=MARGIN, shift=SHIFT, keep=KEEP):
     found = _complete(_detect(gray))
     if all(i in found for i in IDS):
         x0, y0, x1, y1 = _roi_from_markers(found, gap, height, margin, shift)
@@ -112,4 +121,6 @@ def find_board(gray, gap=GAP, height=HEIGHT, margin=MARGIN, shift=SHIFT):
         x0, y0, x1, y1 = roi
 
     h, w = gray.shape
-    return (int(max(x0, 0)), int(max(y0, 0)), int(min(x1, w)), int(min(y1, h)))
+    x0, y0, x1, y1 = max(x0, 0), max(y0, 0), min(x1, w), min(y1, h)
+    x0, x1 = _keep_center_side(x0, x1, w, keep)
+    return (int(x0), int(y0), int(x1), int(y1))
